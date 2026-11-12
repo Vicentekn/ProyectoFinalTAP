@@ -1,4 +1,7 @@
 package dao;
 
-public class UsuarioDAO {
+import model.Usuario;
+
+public interface UsuarioDAO {
+    Usuario autenticar(String username, String passwordPlano);
 }
