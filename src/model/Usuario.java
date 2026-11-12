@@ -3,7 +3,19 @@ package model;
 import javafx.beans.property.*;
 import java.time.LocalDateTime;
 
+/**
+ * Clase de entidad que representa a un usuario del sistema (Administrador, Operador o Auditor).
+ *
+ * Pertenece a la capa Modelo (MVC). Implementa propiedades observables de JavaFX
+ * ({@link Property}) para permitir el enlace bidireccional y la actualización automática
+ * en componentes visuales como {@code TableView}.
+ *
+ * @author Vicente Soto García
+ * @version 1.0
+ */
 public class Usuario {
+
+    // Atributos encapsulados mediante JavaFX Properties
     private final LongProperty id;
     private final StringProperty nombre;
     private final StringProperty username;
@@ -12,10 +24,24 @@ public class Usuario {
     private final BooleanProperty activo;
     private LocalDateTime fechaCreacion;
 
+    /**
+     * Constructor por defecto. Inicializa las propiedades con valores base seguros
+     * y asigna el rol operativo por omisión.
+     */
     public Usuario() {
         this(0L, "", "", "", "OPERADOR", true);
     }
 
+    /**
+     * Constructor parametrizado para instanciar un usuario con todos sus atributos principales.
+     *
+     * @param id       Identificador único en base de datos.
+     * @param nombre   Nombre completo del empleado o administrador.
+     * @param username Nombre de cuenta para inicio de sesión.
+     * @param password Contraseña (en texto plano antes de guardar o hash SHA-1 al recuperar).
+     * @param rol      Nivel de privilegios (ADMINISTRADOR, OPERADOR, AUDITOR).
+     * @param activo   Estado de habilitación de la cuenta en el sistema.
+     */
     public Usuario(Long id, String nombre, String username, String password, String rol, boolean activo) {
         this.id = new SimpleLongProperty(id);
         this.nombre = new SimpleStringProperty(nombre);
@@ -25,7 +51,8 @@ public class Usuario {
         this.activo = new SimpleBooleanProperty(activo);
     }
 
-    // Getters y Setters tradicionales + Properties para JavaFX
+    // --- Métodos Getters, Setters y Propiedades Observables ---
+
     public Long getId() { return id.get(); }
     public void setId(Long id) { this.id.set(id); }
     public LongProperty idProperty() { return id; }

@@ -7,8 +7,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementación concreta del patrón Data Access Object (DAO) para la tabla 'usuarios'.
+ *
+ * PATRÓN DE DISEÑO IMPLEMENTADO: DAO (Data Access Object).
+ * Justificación: Encapsula toda la lógica de acceso a datos y sentencias SQL en una capa
+ * independiente, utilizando {@link PreparedStatement} para prevenir ataques de inyección SQL.
+ *
+ * @author Vicente Soto García
+ * @version 1.0
+ */
 public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
 
+    /**
+     * Constructor que inyecta la conexión JDBC hacia la superclase genérica.
+     * @param connection Conexión activa a MySQL.
+     */
     public UsuarioDAOImpl(Connection connection) {
         super(connection);
     }
@@ -16,6 +30,7 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
     @Override
     public Usuario autenticar(String username, String passwordPlano) {
         String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ? AND activo = TRUE";
+        // Encripta la entrada del usuario a SHA-1 antes de compararla con la BD
         String passwordEncriptada = HashUtil.sha1(passwordPlano);
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -28,31 +43,32 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error al autenticar usuario: " + e.getMessage());
+            System.err.println("Error SQL al autenticar usuario: " + e.getMessage());
         }
-        return null; // Retorna null si las credenciales son incorrectas o el usuario está inactivo
+        return null;
     }
 
     @Override
     public boolean save(Usuario u) {
         String sql = "INSERT INTO usuarios (nombre, username, password, rol, activo) VALUES (?, ?, ?, ?, ?)";
+        // Solicita el retorno de las llaves primarias autogeneradas por MySQL
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, u.getNombre());
             stmt.setString(2, u.getUsername());
-            stmt.setString(3, HashUtil.sha1(u.getPassword())); // Se encripta antes de guardar
+            stmt.setString(3, HashUtil.sha1(u.getPassword())); // Aplica hash SHA-1 antes de persistir
             stmt.setString(4, u.getRol());
             stmt.setBoolean(5, u.isActivo());
 
             if (stmt.executeUpdate() > 0) {
                 try (ResultSet keys = stmt.getGeneratedKeys()) {
                     if (keys.next()) {
-                        u.setId(keys.getLong(1));
+                        u.setId(keys.getLong(1)); // Asigna el ID generado al objeto en memoria
                     }
                 }
                 return true;
             }
         } catch (SQLException e) {
-            System.err.println("Error al guardar usuario: " + e.getMessage());
+            System.err.println("Error SQL al guardar nuevo usuario: " + e.getMessage());
         }
         return false;
     }
@@ -68,7 +84,7 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
             stmt.setLong(5, u.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error al actualizar usuario: " + e.getMessage());
+            System.err.println("Error SQL al actualizar usuario: " + e.getMessage());
             return false;
         }
     }
@@ -80,7 +96,7 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
             stmt.setLong(1, id);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error al eliminar usuario: " + e.getMessage());
+            System.err.println("Error SQL al eliminar usuario: " + e.getMessage());
             return false;
         }
     }
@@ -96,7 +112,7 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error al buscar usuario por ID: " + e.getMessage());
+            System.err.println("Error SQL al buscar usuario por ID: " + e.getMessage());
         }
         return null;
     }
@@ -111,7 +127,7 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
                 lista.add(mapResultSetToEntity(rs));
             }
         } catch (SQLException e) {
-            System.err.println("Error al listar usuarios: " + e.getMessage());
+            System.err.println("Error SQL al obtener el listado de usuarios: " + e.getMessage());
         }
         return lista;
     }
@@ -125,6 +141,7 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
         u.setPassword(rs.getString("password"));
         u.setRol(rs.getString("rol"));
         u.setActivo(rs.getBoolean("activo"));
+
         Timestamp ts = rs.getTimestamp("fecha_creacion");
         if (ts != null) {
             u.setFechaCreacion(ts.toLocalDateTime());
