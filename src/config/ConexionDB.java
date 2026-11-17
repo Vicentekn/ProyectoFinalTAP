@@ -18,9 +18,9 @@ import java.sql.SQLException;
 public class ConexionDB {
 
     // Parámetros de configuración de acceso a la base de datos
-    private static final String URL = "jdbc:mysql://localhost:3306/estacionamiento_bd?useSSL=false&serverTimezone=UTC";
+    private static final String URL = "jdbc:mysql://localhost:3306/estacionamiento_bd";
     private static final String USER = "root";
-    private static final String PASSWORD = "password"; // Reemplazar con la contraseña local de MySQL
+    private static final String PASSWORD = "password"; // Contraseña local de MySQL
 
     // Instancia única y estática de la conexión (Núcleo del patrón Singleton)
     private static Connection connection = null;
