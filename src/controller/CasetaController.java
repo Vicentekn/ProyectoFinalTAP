@@ -17,6 +17,13 @@ import javafx.stage.Stage;
 
 import java.time.LocalDateTime;
 
+import strategy.BoletoPerdidoStrategy;
+import strategy.CalculoTarifaStrategy;
+import strategy.TarifaEstandarStrategy;
+import java.time.Duration;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 /**
  * Controlador principal para la operación diaria en Caseta.
  *
@@ -170,12 +177,96 @@ public class CasetaController {
     }
 
     /**
-     * Acción de salida y cobro (se completará con Strategy y Factory Method en los Días 11 y 12).
+     * Ejecuta los casos de uso CU-02 (Registrar Salida) y CU-03 (Cobrar Tarifa).
+     *
+     * PATRÓN DE DISEÑO APLICADO: Strategy.
+     * Selecciona dinámicamente la estrategia de cálculo ({@link TarifaEstandarStrategy}
+     * o {@link BoletoPerdidoStrategy}) según la casilla marcada por el operador.
      */
     @FXML
     private void handleProcesarSalida() {
-        mostrarAlerta(Alert.AlertType.INFORMATION, "Módulo en Construcción",
-                "El procesamiento completo de cobro con Strategy y Factory se integrará en los Días 11 y 12.");
+        String criterio = txtFolioSalida.getText().trim().toUpperCase();
+
+        if (criterio.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Dato Requerido",
+                    "Seleccione un vehículo de la tabla o escriba el folio/placa para cobrar.");
+            return;
+        }
+
+        // 1. Buscar el ticket activo en la base de datos
+        Ticket ticket = ticketDAO.buscarActivoPorFolioOPlaca(criterio);
+        if (ticket == null) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Ticket No Encontrado",
+                    "No se encontró ningún vehículo activo dentro del estacionamiento con el folio o placa: " + criterio);
+            return;
+        }
+
+        // 2. Obtener la tarifa vigente según el tipo de vehículo del ticket
+        Tarifa tarifaAplicable = tarifaDAO.buscarPorTipoVehiculo(ticket.getTipoVehiculo());
+        if (tarifaAplicable == null) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Tarifa No Configurada",
+                    "No existe una tarifa activa en el sistema para: " + ticket.getTipoVehiculo());
+            return;
+        }
+
+        // 3. Seleccionar e instanciar dinámicamente la estrategia de cobro (Patrón Strategy)
+        CalculoTarifaStrategy estrategiaCobro;
+        String conceptoCobro;
+
+        if (chkBoletoPerdido.isSelected()) {
+            estrategiaCobro = new BoletoPerdidoStrategy();
+            conceptoCobro = "PENALIZACIÓN POR BOLETO PERDIDO";
+        } else {
+            estrategiaCobro = new TarifaEstandarStrategy();
+            conceptoCobro = "TARIFA ESTÁNDAR POR TIEMPO";
+        }
+
+        // 4. Calcular tiempo de estancia y monto total a cobrar
+        LocalDateTime horaSalida = LocalDateTime.now();
+        long minutosTotales = Math.max(0, Duration.between(ticket.getFechaIngreso(), horaSalida).toMinutes());
+        long horas = minutosTotales / 60;
+        long minutos = minutosTotales % 60;
+
+        double montoACobrar = estrategiaCobro.calcularMonto(ticket.getFechaIngreso(), horaSalida, tarifaAplicable);
+
+        // 5. Mostrar resumen de cobro y solicitar confirmación al operador
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar Cobro y Salida (CU-03)");
+        confirmacion.setHeaderText("Resumen de Liquidación - Folio: " + ticket.getFolio());
+        confirmacion.setContentText(
+                "Placa: " + ticket.getPlaca() + " (" + ticket.getTipoVehiculo() + ")\n" +
+                        "Cajón a liberar: #" + ticket.getCajonAsignado() + "\n" +
+                        "Ingreso: " + ticket.getFechaIngreso().format(fmt) + "\n" +
+                        "Salida:  " + horaSalida.format(fmt) + "\n" +
+                        "Tiempo total: " + horas + " hrs " + minutos + " min\n" +
+                        "Modalidad: " + conceptoCobro + "\n\n" +
+                        "TOTAL A COBRAR: $" + String.format("%.2f", montoACobrar) + " MXN"
+        );
+
+        Optional<ButtonType> respuesta = confirmacion.showAndWait();
+        if (respuesta.isPresent() && respuesta.get() == ButtonType.OK) {
+            // 6. Actualizar datos del ticket y persistir salida en MySQL
+            ticket.setFechaSalida(horaSalida);
+            ticket.setMontoTotal(montoACobrar);
+            if (usuarioActual != null) {
+                ticket.setUsuarioSalidaId(usuarioActual.getId());
+            }
+
+            if (ticketDAO.registrarSalida(ticket)) {
+                txtFolioSalida.clear();
+                chkBoletoPerdido.setSelected(false);
+                actualizarDatos(); // Refresca tabla y libera el cajón en tiempo real
+                lblEstado.setText("Salida cobrada: Placa " + ticket.getPlaca() + " | Total: $" + String.format("%.2f", montoACobrar));
+
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Salida Registrada",
+                        "Cobro realizado con éxito por $" + String.format("%.2f", montoACobrar) +
+                                "\nEl cajón #" + ticket.getCajonAsignado() + " vuelve a estar disponible.");
+            } else {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de Persistencia",
+                        "Ocurrió un error al actualizar el ticket en la base de datos.");
+            }
+        }
     }
 
     /**
