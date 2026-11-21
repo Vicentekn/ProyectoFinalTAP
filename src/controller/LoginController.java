@@ -3,6 +3,9 @@ package controller;
 import config.ConexionDB;
 import dao.UsuarioDAO;
 import dao.UsuarioDAOImpl;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import model.Usuario;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -81,37 +84,45 @@ public class LoginController {
     private void redirigirSegunRol(Usuario usuario) {
         String rol = usuario.getRol().toUpperCase();
 
-        // Mensaje temporal de verificación antes de conectar las vistas de Semana 2 y 3
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.setTitle("Acceso Concedido");
-        alerta.setHeaderText("Bienvenido, " + usuario.getNombre());
+        try {
+            Stage stageActual = (Stage) btnIngresar.getScene().getWindow();
 
-        switch (rol) {
-            case "ADMINISTRADOR":
-                alerta.setContentText("Rol: ADMINISTRADOR\nRedirigiendo al Panel de Control Total y Tarifas...");
-                alerta.showAndWait();
-                // TODO (Día 15): Cargar admin_view.fxml
-                break;
+            switch (rol) {
+                case "OPERADOR":
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/caseta_view.fxml"));
+                    Parent root = loader.load();
 
-            case "OPERADOR":
-                alerta.setContentText("Rol: OPERADOR DE CASETA\nRedirigiendo al Módulo de Entradas y Salidas...");
-                alerta.showAndWait();
-                // TODO (Día 10): Cargar caseta_view.fxml
-                break;
+                    CasetaController casetaController = loader.getController();
+                    casetaController.setUsuarioActual(usuario);
 
-            case "AUDITOR":
-                alerta.setContentText("Rol: AUDITOR / GERENCIA\nRedirigiendo al Módulo de Reportes (Solo Lectura)...");
-                alerta.showAndWait();
-                // TODO (Día 16): Cargar reportes_view.fxml
-                break;
+                    stageActual.setScene(new Scene(root));
+                    stageActual.setTitle("Sistema de Estacionamiento - Módulo de Caseta");
+                    stageActual.setResizable(true);
+                    stageActual.centerOnScreen();
+                    break;
 
-            default:
-                lblMensajeError.setText("Rol de usuario no reconocido en el sistema.");
-                return;
+                case "ADMINISTRADOR":
+                    Alert alertaAdmin = new Alert(Alert.AlertType.INFORMATION);
+                    alertaAdmin.setTitle("Acceso Concedido");
+                    alertaAdmin.setHeaderText("Bienvenido, " + usuario.getNombre());
+                    alertaAdmin.setContentText("Rol: ADMINISTRADOR\nEl panel de administración se habilitará en el Día 15.");
+                    alertaAdmin.showAndWait();
+                    break;
+
+                case "AUDITOR":
+                    Alert alertaAuditor = new Alert(Alert.AlertType.INFORMATION);
+                    alertaAuditor.setTitle("Acceso Concedido");
+                    alertaAuditor.setHeaderText("Bienvenido, " + usuario.getNombre());
+                    alertaAuditor.setContentText("Rol: AUDITOR / GERENCIA\nEl módulo de reportes se habilitará en el Día 16.");
+                    alertaAuditor.showAndWait();
+                    break;
+
+                default:
+                    lblMensajeError.setText("Rol de usuario no reconocido en el sistema.");
+            }
+        } catch (Exception e) {
+            lblMensajeError.setText("Error al cargar la vista correspondiente al rol.");
+            System.err.println("Error de navegación: " + e.getMessage());
         }
-
-        // Ejemplo de cómo cerrar la ventana actual cuando se abra la siguiente escena:
-        // Stage stageActual = (Stage) btnIngresar.getScene().getWindow();
-        // stageActual.close();
     }
 }
