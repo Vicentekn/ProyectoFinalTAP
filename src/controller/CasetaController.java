@@ -24,6 +24,8 @@ import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import factory.ComprobanteFactory;
+
 /**
  * Controlador principal para la operación diaria en Caseta.
  *
@@ -169,8 +171,10 @@ public class CasetaController {
             txtPlacaEntrada.clear();
             actualizarDatos();
             lblEstado.setText("Entrada registrada: Placa " + placa + " | Folio: " + nuevoTicket.getFolio() + " | Cajón #" + cajonLibre);
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Ticket Generado (CU-01)",
-                    "Folio: " + nuevoTicket.getFolio() + "\nPlaca: " + placa + "\nCajón Asignado: #" + cajonLibre);
+
+            // Generar y mostrar ticket de entrada usando Factory Method (CU-04)
+            String ticketEntrada = ComprobanteFactory.crearComprobante(nuevoTicket, ComprobanteFactory.TIPO_ENTRADA);
+            mostrarComprobanteImpreso("Ticket de Entrada - " + nuevoTicket.getFolio(), ticketEntrada);
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error de Registro", "No se pudo guardar el ticket en la base de datos.");
         }
@@ -254,14 +258,15 @@ public class CasetaController {
             }
 
             if (ticketDAO.registrarSalida(ticket)) {
+                ticket.setEstado("PAGADO");
                 txtFolioSalida.clear();
                 chkBoletoPerdido.setSelected(false);
-                actualizarDatos(); // Refresca tabla y libera el cajón en tiempo real
+                actualizarDatos();
                 lblEstado.setText("Salida cobrada: Placa " + ticket.getPlaca() + " | Total: $" + String.format("%.2f", montoACobrar));
 
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Salida Registrada",
-                        "Cobro realizado con éxito por $" + String.format("%.2f", montoACobrar) +
-                                "\nEl cajón #" + ticket.getCajonAsignado() + " vuelve a estar disponible.");
+                // Generar y mostrar recibo de pago usando Factory Method (CU-04)
+                String reciboSalida = ComprobanteFactory.crearComprobante(ticket, ComprobanteFactory.TIPO_SALIDA);
+                mostrarComprobanteImpreso("Comprobante de Pago - " + ticket.getFolio(), reciboSalida);
             } else {
                 mostrarAlerta(Alert.AlertType.ERROR, "Error de Persistencia",
                         "Ocurrió un error al actualizar el ticket en la base de datos.");
@@ -311,6 +316,29 @@ public class CasetaController {
         alert.setTitle(titulo);
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+
+    /**
+     * Muestra en pantalla el comprobante generado por {@link ComprobanteFactory}
+     * simulando la impresión del ticket de caseta (CU-04).
+     *
+     * @param titulo    Título de la ventana de vista previa.
+     * @param contenido Texto formateado del ticket.
+     */
+    private void mostrarComprobanteImpreso(String titulo, String contenido) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText("Vista Previa de Impresión (CU-04)");
+
+        TextArea areaTicket = new TextArea(contenido);
+        areaTicket.setEditable(false);
+        areaTicket.setWrapText(false);
+        areaTicket.setStyle("-fx-font-family: 'Monospaced'; -fx-font-size: 12px;");
+        areaTicket.setPrefWidth(360);
+        areaTicket.setPrefHeight(310);
+
+        alert.getDialogPane().setContent(areaTicket);
         alert.showAndWait();
     }
 }
