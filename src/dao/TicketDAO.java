@@ -49,4 +49,14 @@ public interface TicketDAO {
      * @return Número del cajón libre asignable, o -1 si el estacionamiento está lleno.
      */
     int obtenerSiguienteCajonDisponible(int capacidadMaxima);
+
+    /**
+     * Consulta los tickets registrados dentro de un rango de fechas y estado específico (CU-06).
+     *
+     * @param inicio Fecha y hora inicial del corte.
+     * @param fin    Fecha y hora final del corte.
+     * @param estado Filtro de estado ("TODOS", "PAGADO", "EN_ESTACIONAMIENTO", "CANCELADO").
+     * @return Lista de tickets que cumplen con los criterios de auditoría.
+     */
+    List<Ticket> buscarPorRangoFechas(java.time.LocalDateTime inicio, java.time.LocalDateTime fin, String estado);
 }

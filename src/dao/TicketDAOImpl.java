@@ -248,4 +248,31 @@ public class TicketDAOImpl extends GenericDAO<Ticket> implements TicketDAO {
 
         return t;
     }
+
+    @Override
+    public List<Ticket> buscarPorRangoFechas(LocalDateTime inicio, LocalDateTime fin, String estado) {
+        List<Ticket> lista = new ArrayList<>();
+        boolean filtrarEstado = (estado != null && !estado.equalsIgnoreCase("TODOS"));
+
+        String sql = "SELECT * FROM tickets WHERE fecha_ingreso BETWEEN ? AND ? " +
+                (filtrarEstado ? "AND estado = ? " : "") +
+                "ORDER BY fecha_ingreso DESC";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin));
+            if (filtrarEstado) {
+                stmt.setString(3, estado.toUpperCase());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapResultSetToEntity(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error SQL al consultar reporte financiero (CU-06): " + e.getMessage());
+        }
+        return lista;
+    }
 }
