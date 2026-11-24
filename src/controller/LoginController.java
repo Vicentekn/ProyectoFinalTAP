@@ -115,11 +115,16 @@ public class LoginController {
                     break;
 
                 case "AUDITOR":
-                    Alert alertaAuditor = new Alert(Alert.AlertType.INFORMATION);
-                    alertaAuditor.setTitle("Acceso Concedido");
-                    alertaAuditor.setHeaderText("Bienvenido, " + usuario.getNombre());
-                    alertaAuditor.setContentText("Rol: AUDITOR / GERENCIA\nEl módulo de reportes se habilitará en el Día 16.");
-                    alertaAuditor.showAndWait();
+                    FXMLLoader loaderAuditor = new FXMLLoader(getClass().getResource("/view/auditoria_view.fxml"));
+                    Parent rootAuditor = loaderAuditor.load();
+
+                    AuditoriaController auditoriaController = loaderAuditor.getController();
+                    auditoriaController.setUsuarioActual(usuario);
+
+                    stageActual.setScene(new Scene(rootAuditor));
+                    stageActual.setTitle("Sistema de Estacionamiento - Auditoría y Reportes");
+                    stageActual.setResizable(true);
+                    stageActual.centerOnScreen();
                     break;
 
                 default:
