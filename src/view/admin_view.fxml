@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="660.0" prefWidth="1020.0" style="-fx-background-color: #f4f6f9;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.AdminController">
+
+    <!-- BARRA SUPERIOR -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #1e272e; -fx-padding: 15;">
+            <children>
+                <VBox>
+                    <children>
+                        <Label style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"
+                               text="Panel de Administración del Sistema" />
+                        <Label fx:id="lblAdminActivo" style="-fx-text-fill: #d2dae2; -fx-font-size: 12px;"
+                               text="Administrador: Sin sesión" />
+                    </children>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button onAction="#handleAbrirCaseta"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand;"
+                        text="Ir a Caseta" />
+
+                <Button onAction="#handleCerrarSesion"
+                        style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-cursor: hand;"
+                        text="Cerrar Sesión" />
+            </children>
+        </HBox>
+    </top>
+
+    <!-- CONTENIDO PRINCIPAL CON PESTAÑAS -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <!-- PESTAÑA 1: CONFIGURACIÓN DE TARIFAS (CU-05) -->
+                <Tab text="1. Configuración de Tarifas (CU-05)">
+                    <content>
+                        <HBox spacing="20.0">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <children>
+                                <!-- Formulario de Edición/Creación de Tarifa -->
+                                <VBox prefWidth="320.0" spacing="10.0"
+                                      style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 6; -fx-border-color: #dcdde1; -fx-border-radius: 6;">
+                                    <children>
+                                        <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"
+                                               text="Datos de la Tarifa" />
+
+                                        <Label text="Tipo de Vehículo:" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtTipoVehiculo" promptText="Ej. Automóvil, Motocicleta" />
+
+                                        <Label text="Costo por Hora ($ MXN):" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtCostoHora" promptText="Ej. 20.00" />
+
+                                        <Label text="Costo por Fracción 15 min ($):" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtCostoFraccion" promptText="Ej. 5.00" />
+
+                                        <Label text="Minutos de Gracia (Tolerancia):" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtMinutosGracia" promptText="Ej. 15" />
+
+                                        <Label text="Multa Boleto Perdido ($ MXN):" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtBoletoPerdido" promptText="Ej. 150.00" />
+
+                                        <CheckBox fx:id="chkTarifaActiva" selected="true" text="Tarifa Vigente / Activa" />
+
+                                        <HBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
+                                            <children>
+                                                <Button onAction="#handleGuardarTarifa" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"
+                                                        text="Guardar / Actualizar" />
+                                                <Button onAction="#limpiarFormularioTarifa"
+                                                        style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-cursor: hand;"
+                                                        text="Limpiar" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+
+                                <!-- Tabla de Tarifas Configuradas -->
+                                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"
+                                               text="Tarifas Registradas (Seleccione una fila para editar)" />
+                                        <TableView fx:id="tblTarifas" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="colTarifaId" prefWidth="50.0" text="ID" />
+                                                <TableColumn fx:id="colTarifaTipo" prefWidth="130.0" text="Tipo Vehículo" />
+                                                <TableColumn fx:id="colTarifaHora" prefWidth="100.0" text="Costo Hora" />
+                                                <TableColumn fx:id="colTarifaFraccion" prefWidth="110.0" text="Fracción" />
+                                                <TableColumn fx:id="colTarifaGracia" prefWidth="90.0" text="Gracia (min)" />
+                                                <TableColumn fx:id="colTarifaPerdido" prefWidth="115.0" text="Boleto Perdido" />
+                                                <TableColumn fx:id="colTarifaActivo" prefWidth="75.0" text="Activa" />
+                                            </columns>
+                                            <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                            </columnResizePolicy>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </content>
+                </Tab>
+
+                <!-- PESTAÑA 2: GESTIÓN DE USUARIOS Y ROLES (RNF-02) -->
+                <Tab text="2. Gestión de Usuarios y Roles">
+                    <content>
+                        <HBox spacing="20.0">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <children>
+                                <!-- Formulario Alta/Edición de Usuario -->
+                                <VBox prefWidth="320.0" spacing="10.0"
+                                      style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 6; -fx-border-color: #dcdde1; -fx-border-radius: 6;">
+                                    <children>
+                                        <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"
+                                               text="Cuenta de Usuario" />
+
+                                        <Label text="Nombre Completo:" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtNombreUsuario" promptText="Ej. Juan Pérez" />
+
+                                        <Label text="Nombre de Acceso (Username):" style="-fx-font-weight: bold;" />
+                                        <TextField fx:id="txtUsername" promptText="Ej. operador2" />
+
+                                        <Label text="Contraseña (Se cifrará en SHA-1):" style="-fx-font-weight: bold;" />
+                                        <PasswordField fx:id="txtPasswordUsuario" promptText="Dejar vacío para no cambiar al editar" />
+
+                                        <Label text="Rol del Sistema:" style="-fx-font-weight: bold;" />
+                                        <ComboBox fx:id="cmbRolUsuario" maxWidth="Infinity" />
+
+                                        <CheckBox fx:id="chkUsuarioActivo" selected="true" text="Usuario Habilitado" />
+
+                                        <HBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
+                                            <children>
+                                                <Button onAction="#handleGuardarUsuario" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                                        style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"
+                                                        text="Guardar Usuario" />
+                                                <Button onAction="#limpiarFormularioUsuario"
+                                                        style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-cursor: hand;"
+                                                        text="Limpiar" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+
+                                <!-- Tabla de Usuarios -->
+                                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"
+                                               text="Usuarios Registrados en el Sistema" />
+                                        <TableView fx:id="tblUsuarios" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="colUsrId" prefWidth="50.0" text="ID" />
+                                                <TableColumn fx:id="colUsrNombre" prefWidth="180.0" text="Nombre Completo" />
+                                                <TableColumn fx:id="colUsrUsername" prefWidth="130.0" text="Usuario" />
+                                                <TableColumn fx:id="colUsrRol" prefWidth="130.0" text="Rol" />
+                                                <TableColumn fx:id="colUsrActivo" prefWidth="80.0" text="Activo" />
+                                            </columns>
+                                            <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                            </columnResizePolicy>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+
+    <!-- BARRA INFERIOR -->
+    <bottom>
+        <HBox style="-fx-background-color: #ecf0f1; -fx-padding: 8 15; -fx-border-color: #bdc3c7; -fx-border-width: 1 0 0 0;">
+            <children>
+                <Label fx:id="lblEstado" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;"
+                       text="Módulo de administración listo." />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

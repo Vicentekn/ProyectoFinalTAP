@@ -102,11 +102,16 @@ public class LoginController {
                     break;
 
                 case "ADMINISTRADOR":
-                    Alert alertaAdmin = new Alert(Alert.AlertType.INFORMATION);
-                    alertaAdmin.setTitle("Acceso Concedido");
-                    alertaAdmin.setHeaderText("Bienvenido, " + usuario.getNombre());
-                    alertaAdmin.setContentText("Rol: ADMINISTRADOR\nEl panel de administración se habilitará en el Día 15.");
-                    alertaAdmin.showAndWait();
+                    FXMLLoader loaderAdmin = new FXMLLoader(getClass().getResource("/view/admin_view.fxml"));
+                    Parent rootAdmin = loaderAdmin.load();
+
+                    AdminController adminController = loaderAdmin.getController();
+                    adminController.setUsuarioActual(usuario);
+
+                    stageActual.setScene(new Scene(rootAdmin));
+                    stageActual.setTitle("Sistema de Estacionamiento - Panel de Administración");
+                    stageActual.setResizable(true);
+                    stageActual.centerOnScreen();
                     break;
 
                 case "AUDITOR":
