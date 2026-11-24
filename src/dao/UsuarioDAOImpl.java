@@ -75,13 +75,14 @@ public class UsuarioDAOImpl extends GenericDAO<Usuario> implements UsuarioDAO {
 
     @Override
     public boolean update(Usuario u) {
-        String sql = "UPDATE usuarios SET nombre = ?, username = ?, rol = ?, activo = ? WHERE id = ?";
+        String sql = "UPDATE usuarios SET nombre = ?, username = ?, password = ?, rol = ?, activo = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, u.getNombre());
             stmt.setString(2, u.getUsername());
-            stmt.setString(3, u.getRol());
-            stmt.setBoolean(4, u.isActivo());
-            stmt.setLong(5, u.getId());
+            stmt.setString(3, u.getPassword());
+            stmt.setString(4, u.getRol());
+            stmt.setBoolean(5, u.isActivo());
+            stmt.setLong(6, u.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error SQL al actualizar usuario: " + e.getMessage());
